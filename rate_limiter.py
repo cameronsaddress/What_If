@@ -1,13 +1,13 @@
 """
-Rate limiting and caching utilities for API calls
-Implements token bucket algorithm and response caching
+Rate limiting and caching utilities for API calls.
+Implements token bucket algorithm and LRU response caching.
 """
 
 import time
 import json
 import hashlib
 from typing import Dict, Any, Optional, Tuple
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from collections import defaultdict
 import threading
 
@@ -107,7 +107,7 @@ class ResponseCache:
                 response, timestamp = self.cache[key]
                 
                 # Check if expired
-                if datetime.utcnow() - timestamp > self.ttl:
+                if datetime.now(timezone.utc) - timestamp > self.ttl:
                     del self.cache[key]
                     self.stats["misses"] += 1
                     return None
@@ -133,7 +133,7 @@ class ResponseCache:
                 self.stats["evictions"] += 1
             
             # Add/update cache
-            self.cache[key] = (response, datetime.utcnow())
+            self.cache[key] = (response, datetime.now(timezone.utc))
             if key in self.access_order:
                 self.access_order.remove(key)
             self.access_order.append(key)

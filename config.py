@@ -1,88 +1,52 @@
 """
-Configuration settings for optimization and performance
+Configuration for the What If life-path simulator.
+Centralized settings for LLM providers, rate limiting, caching, and security.
 """
 
-# Rate Limiting Configuration
+# OpenRouter LLM Configuration
+# Uses OpenRouter as a unified gateway to multiple model providers.
+LLM_CONFIG = {
+    "base_url": "https://openrouter.ai/api/v1",
+    "models": {
+        "primary": "anthropic/claude-sonnet-4-5-20250929",
+        "fallback_1": "openai/gpt-4o",
+        "fallback_2": "google/gemini-2.0-flash",
+    },
+    "max_tokens": 1024,
+    "temperature": 0.7,
+    "timeout": 30,
+}
+
+# Rate Limiting — token bucket algorithm
 RATE_LIMIT_CONFIG = {
-    "max_tokens": 10,           # Maximum requests in bucket
-    "refill_rate": 0.5,         # Tokens per second (1 token every 2 seconds)
-    "burst_limit": 5,           # Max burst requests
+    "max_tokens": 10,
+    "refill_rate": 0.5,       # tokens per second (1 every 2s)
+    "burst_limit": 5,
 }
 
-# Cache Configuration
+# Response Cache — avoids duplicate LLM calls
 CACHE_CONFIG = {
-    "max_size": 100,            # Maximum cached responses
-    "ttl_minutes": 15,          # Time to live
-    "enable_compression": True,  # Compress cached data
+    "max_size": 100,
+    "ttl_minutes": 15,
 }
 
-# API Configuration
-API_CONFIG = {
-    "grok": {
-        "model": "grok-beta",
-        "max_tokens": 1000,
-        "temperature": 0.7,
-        "timeout": 30,
-        "base_url": "https://api.x.ai/v1"
-    },
-    "anthropic": {
-        "model": "claude-3-sonnet-20240229",
-        "max_tokens": 1000,
-        "temperature": 0.7,
-        "timeout": 30
-    },
-    "openai": {
-        "model": "gpt-4",
-        "max_tokens": 1000,
-        "temperature": 0.7,
-        "timeout": 30
-    }
-}
-
-# Performance Optimization
-PERFORMANCE_CONFIG = {
-    "enable_async": True,
-    "max_concurrent_branches": 4,
-    "batch_size": 2,
-    "connection_pool_size": 10,
-    "enable_response_streaming": False,
-}
-
-# Security Configuration
+# Security
 SECURITY_CONFIG = {
     "max_input_length": 500,
     "enable_content_filtering": True,
-    "log_suspicious_activity": True,
-    "api_key_validation": True,
     "sanitize_outputs": True,
 }
 
-# Monitoring Configuration
+# Monitoring
 MONITORING_CONFIG = {
     "enable_metrics": True,
     "log_api_calls": True,
     "track_costs": True,
-    "alert_on_errors": True,
-    "metrics_retention_days": 30,
 }
 
-# Cost Optimization
-COST_CONFIG = {
-    "enable_caching": True,
-    "prefer_cached_responses": True,
-    "fallback_on_rate_limit": True,
-    "batch_similar_requests": True,
-    "estimated_costs": {
-        "grok": 0.00001,      # Per token
-        "anthropic": 0.00002,
-        "openai": 0.00003
-    }
-}
-
-# Development/Testing Configuration
-DEV_CONFIG = {
-    "enable_debug": False,
-    "mock_api_calls": False,
-    "always_use_fallback": False,
-    "detailed_logging": True,
+# Cost estimates (per 1K tokens, USD)
+COST_ESTIMATES = {
+    "anthropic/claude-sonnet-4-5-20250929": 0.003,
+    "openai/gpt-4o": 0.005,
+    "google/gemini-2.0-flash": 0.0001,
 }

@@ -1,6 +1,6 @@
 """
-River of Destiny Visualization Generator
-Creates interactive SVG visualizations for life path branches
+River of Destiny — SVG visualization generator for branching life-path timelines.
+Creates interactive SVG with Bezier curves, hover effects, and mobile adaptation.
 """
 
 import svgwrite
@@ -8,297 +8,281 @@ import random
 import math
 from typing import List, Tuple, Dict
 import base64
-from io import BytesIO
+
 
 class RiverOfDestiny:
     def __init__(self, width: int = 800, height: int = 600):
         self.width = width
         self.height = height
         self.colors = {
-            'main_river': '#667eea',
-            'branches': ['#FF6B6B', '#FFD700', '#4ECDC4', '#F093FB'],
-            'nodes': '#FFFFFF',
-            'text': '#333333',
-            'background': 'transparent'
+            "main_river": "#7c3aed",
+            "branches": ["#60a5fa", "#34d399", "#f59e0b", "#f87171"],
+            "nodes": "#FFFFFF",
+            "text": "#e0e0ff",
         }
-    
+
     def generate_river_svg(self, branches: List[Dict], decision: str) -> str:
-        """Generate the main River of Destiny SVG"""
         dwg = svgwrite.Drawing(size=(self.width, self.height))
-        
-        # Add CSS styles for interactivity
+
         dwg.defs.add(dwg.style("""
-            @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap');
-            .branch-path { 
-                stroke-width: 12; 
-                fill: none; 
-                opacity: 0.9;
-                transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+            .branch-path {
+                stroke-width: 10;
+                fill: none;
+                opacity: 0.85;
+                transition: all 0.3s ease;
                 cursor: pointer;
-                filter: drop-shadow(0 0 20px rgba(102, 126, 234, 0.5));
+                filter: drop-shadow(0 0 12px rgba(124, 58, 237, 0.3));
             }
-            .branch-path:hover { 
-                stroke-width: 16; 
+            .branch-path:hover {
+                stroke-width: 14;
                 opacity: 1;
-                filter: drop-shadow(0 0 30px rgba(255, 107, 107, 0.8));
-                transform: scale(1.02);
+                filter: drop-shadow(0 0 24px rgba(124, 58, 237, 0.6));
             }
-            .event-node { 
+            .event-node {
                 cursor: pointer;
-                transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-                filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.6));
+                transition: all 0.3s ease;
             }
-            .event-node:hover { 
-                r: 15;
-                filter: drop-shadow(0 0 20px rgba(255, 215, 0, 1));
+            .event-node:hover {
+                r: 14;
+                filter: drop-shadow(0 0 16px rgba(255, 255, 255, 0.8));
             }
             .branch-title {
-                font-family: 'Fredoka', cursive;
-                font-size: 18px;
-                font-weight: 700;
-                fill: #333;
-                text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.8);
+                font-family: 'Inter', sans-serif;
+                font-size: 15px;
+                font-weight: 600;
+                fill: #e0e0ff;
             }
             .decision-text {
-                font-family: 'Fredoka', cursive;
-                font-size: 24px;
+                font-family: 'Inter', sans-serif;
+                font-size: 20px;
                 font-weight: 700;
-                fill: #667eea;
+                fill: #a78bfa;
                 text-anchor: middle;
-                text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.2);
             }
             .fate-score {
-                font-family: 'Fredoka', cursive;
-                font-size: 14px;
-                fill: #764ba2;
-                font-weight: 600;
-            }
-            .event-node-group {
-                animation: pulse 2s ease-in-out infinite;
-            }
-            @keyframes pulse {
-                0%, 100% { transform: scale(1); }
-                50% { transform: scale(1.1); }
+                font-family: 'Inter', sans-serif;
+                font-size: 12px;
+                fill: #8888aa;
+                font-weight: 500;
             }
         """))
-        
-        # Game-style gradient background
-        gradient = dwg.defs.add(dwg.radialGradient(id="bg-gradient", cx="50%", cy="50%", r="80%"))
-        gradient.add_stop_color(offset="0%", color="#FFE5B4", opacity="0.3")
-        gradient.add_stop_color(offset="50%", color="#FFD700", opacity="0.1")
-        gradient.add_stop_color(offset="100%", color="#FF6B6B", opacity="0.05")
-        dwg.add(dwg.rect(insert=(0, 0), size=(self.width, self.height), fill="url(#bg-gradient)", rx=20, ry=20))
-        
-        # Add sparkle effects
-        for _ in range(15):
-            x = random.randint(50, self.width - 50)
-            y = random.randint(50, self.height - 50)
-            sparkle = dwg.circle(center=(x, y), r=2, fill="#FFD700", opacity="0.6")
-            sparkle.add(dwg.animateTransform("rotate", "0 {} {}".format(x, y), "360 {} {}".format(x, y), 
-                                            dur="10s", repeatCount="indefinite"))
-            dwg.add(sparkle)
-        
-        # Add stylized title
+
+        # Dark gradient background
+        gradient = dwg.defs.add(
+            dwg.radialGradient(id="bg-gradient", cx="50%", cy="50%", r="80%")
+        )
+        gradient.add_stop_color(offset="0%", color="#302b63", opacity="0.4")
+        gradient.add_stop_color(offset="100%", color="#0f0c29", opacity="0.6")
+        dwg.add(
+            dwg.rect(
+                insert=(0, 0),
+                size=(self.width, self.height),
+                fill="url(#bg-gradient)",
+                rx=16,
+                ry=16,
+            )
+        )
+
+        # Subtle particle dots
+        for _ in range(10):
+            x = random.randint(40, self.width - 40)
+            y = random.randint(40, self.height - 40)
+            dwg.add(dwg.circle(center=(x, y), r=1.5, fill="#a78bfa", opacity="0.3"))
+
+        # Title
         title_group = dwg.g()
-        # Title background
-        title_bg = dwg.rect(insert=(self.width/2 - 200, 15), size=(400, 50), 
-                          fill="rgba(255, 255, 255, 0.8)", rx=25, ry=25,
-                          stroke="#667eea", stroke_width=3)
+        title_bg = dwg.rect(
+            insert=(self.width / 2 - 180, 15),
+            size=(360, 44),
+            fill="rgba(255, 255, 255, 0.06)",
+            rx=22,
+            ry=22,
+            stroke="#7c3aed",
+            stroke_width=1,
+            stroke_opacity=0.3,
+        )
         title_group.add(title_bg)
-        # Title text
-        title_text = dwg.text(f'🎆 {decision} 🎆', insert=(self.width/2, 45), 
-                            class_="decision-text")
+        title_text = dwg.text(
+            decision[:40] + ("..." if len(decision) > 40 else ""),
+            insert=(self.width / 2, 42),
+            class_="decision-text",
+        )
         title_group.add(title_text)
         dwg.add(title_group)
-        
-        # Main river source
+
+        # Main river trunk
         start_x = self.width // 2
-        start_y = 80
-        fork_y = 200
-        
-        # Draw main river with glow effect
-        # Glow layer
-        glow_path = dwg.path(d=f"M {start_x},{start_y} C {start_x},{start_y + 50} {start_x},{fork_y - 50} {start_x},{fork_y}",
-                           stroke=self.colors['main_river'], stroke_width=25, fill="none", opacity=0.3,
-                           filter="blur(10px)")
-        dwg.add(glow_path)
-        
-        # Main river
-        main_path = dwg.path(d=f"M {start_x},{start_y} C {start_x},{start_y + 50} {start_x},{fork_y - 50} {start_x},{fork_y}",
-                           stroke=self.colors['main_river'], stroke_width=15, fill="none", opacity=0.9)
-        dwg.add(main_path)
-        
-        # Calculate branch positions
-        branch_spacing = self.width / (len(branches) + 1)
-        
+        start_y = 75
+        fork_y = 190
+
+        # Glow
+        dwg.add(
+            dwg.path(
+                d=f"M {start_x},{start_y} C {start_x},{start_y+50} {start_x},{fork_y-50} {start_x},{fork_y}",
+                stroke=self.colors["main_river"],
+                stroke_width=20,
+                fill="none",
+                opacity=0.2,
+            )
+        )
+        # Trunk
+        dwg.add(
+            dwg.path(
+                d=f"M {start_x},{start_y} C {start_x},{start_y+50} {start_x},{fork_y-50} {start_x},{fork_y}",
+                stroke=self.colors["main_river"],
+                stroke_width=12,
+                fill="none",
+                opacity=0.85,
+            )
+        )
+
+        # Branches
+        spacing = self.width / (len(branches) + 1)
+
         for i, branch in enumerate(branches):
-            branch_x = branch_spacing * (i + 1)
-            color = self.colors['branches'][i % len(self.colors['branches'])]
-            
-            # Create curved branch path
-            path_data = self._create_branch_path(start_x, fork_y, branch_x, self.height - 100, i)
-            branch_path = dwg.path(d=path_data, stroke=color, class_="branch-path",
-                                 id=f"branch-{branch['branch_id']}")
-            dwg.add(branch_path)
-            
-            # Add branch title
-            title_y = fork_y + 60
-            dwg.add(dwg.text(branch['title'], insert=(branch_x, title_y), 
-                           class_="branch-title", text_anchor="middle"))
-            
-            # Add fate score
-            dwg.add(dwg.text(f"Fate Score: {branch['fate_score']}/100", 
-                           insert=(branch_x, title_y + 20), 
-                           class_="fate-score", text_anchor="middle"))
-            
-            # Add event nodes along the branch
-            events = branch.get('key_events', [])[:3]  # Limit to 3 events
+            branch_x = spacing * (i + 1)
+            color = self.colors["branches"][i % len(self.colors["branches"])]
+
+            path_data = self._create_branch_path(start_x, fork_y, branch_x, self.height - 90, i)
+            dwg.add(
+                dwg.path(
+                    d=path_data,
+                    stroke=color,
+                    class_="branch-path",
+                    id=f"branch-{branch['branch_id']}",
+                )
+            )
+
+            # Title
+            title_y = fork_y + 55
+            dwg.add(
+                dwg.text(
+                    branch["title"],
+                    insert=(branch_x, title_y),
+                    class_="branch-title",
+                    text_anchor="middle",
+                )
+            )
+
+            # Fate score
+            dwg.add(
+                dwg.text(
+                    f"Score: {branch['fate_score']}/100",
+                    insert=(branch_x, title_y + 18),
+                    class_="fate-score",
+                    text_anchor="middle",
+                )
+            )
+
+            # Event nodes
+            events = branch.get("key_events", [])[:3]
             for j, event in enumerate(events):
-                event_y = fork_y + 120 + (j * 100)
-                # Calculate position along the curve
                 t = (j + 1) / (len(events) + 1)
-                node_x, node_y = self._get_point_on_curve(start_x, fork_y, branch_x, 
-                                                         self.height - 100, t, i)
-                
-                # Event node with game-style design
-                g = dwg.g(class_="event-node-group")
-                
-                # Outer glow
-                glow = dwg.circle(center=(node_x, node_y), r=15, 
-                                fill=color, opacity=0.3, filter="blur(5px)")
-                g.add(glow)
-                
-                # Main node
-                circle = dwg.circle(center=(node_x, node_y), r=10, 
-                                  fill="#FFFFFF", stroke=color, 
-                                  stroke_width=4, class_="event-node",
-                                  id=f"event-{branch['branch_id']}-{j}")
-                
-                # Inner star
-                star = dwg.polygon(points=self._create_star_points(node_x, node_y, 5, 3),
-                                 fill=color, opacity=0.8)
-                
-                # Add title element for tooltip
-                title = dwg.title(event)
-                g.add(circle)
-                g.add(star)
-                g.add(title)
+                node_x, node_y = self._get_point_on_curve(
+                    start_x, fork_y, branch_x, self.height - 90, t, i
+                )
+
+                g = dwg.g()
+
+                # Glow ring
+                g.add(
+                    dwg.circle(
+                        center=(node_x, node_y),
+                        r=12,
+                        fill=color,
+                        opacity=0.2,
+                    )
+                )
+
+                # Node
+                g.add(
+                    dwg.circle(
+                        center=(node_x, node_y),
+                        r=8,
+                        fill="#1a1a2e",
+                        stroke=color,
+                        stroke_width=3,
+                        class_="event-node",
+                        id=f"event-{branch['branch_id']}-{j}",
+                    )
+                )
+
+                # Inner dot
+                g.add(dwg.circle(center=(node_x, node_y), r=3, fill=color, opacity=0.8))
+
+                # Tooltip
+                g.add(dwg.title(event))
                 dwg.add(g)
-        
-        # Add legend
+
+        # Legend
         self._add_legend(dwg)
-        
+
         return dwg.tostring()
-    
-    def _create_branch_path(self, start_x: int, start_y: int, end_x: int, 
-                           end_y: int, branch_index: int) -> str:
-        """Create a curved path for a branch"""
-        # Add some randomness to make branches look natural
-        control1_x = start_x + (end_x - start_x) * 0.3 + random.randint(-20, 20)
-        control1_y = start_y + (end_y - start_y) * 0.3
-        
-        control2_x = start_x + (end_x - start_x) * 0.7 + random.randint(-20, 20)
-        control2_y = start_y + (end_y - start_y) * 0.7
-        
-        # Create smooth bezier curve
-        path = f"M {start_x},{start_y} C {control1_x},{control1_y} {control2_x},{control2_y} {end_x},{end_y}"
-        return path
-    
-    def _get_point_on_curve(self, start_x: int, start_y: int, end_x: int, 
-                           end_y: int, t: float, branch_index: int) -> Tuple[float, float]:
-        """Get a point along the bezier curve at parameter t (0-1)"""
-        # Simplified bezier calculation
-        control1_x = start_x + (end_x - start_x) * 0.3 + (branch_index - 1.5) * 10
-        control1_y = start_y + (end_y - start_y) * 0.3
-        
-        control2_x = start_x + (end_x - start_x) * 0.7 + (branch_index - 1.5) * 10
-        control2_y = start_y + (end_y - start_y) * 0.7
-        
-        # Cubic bezier formula
-        x = ((1-t)**3 * start_x + 
-             3*(1-t)**2*t * control1_x + 
-             3*(1-t)*t**2 * control2_x + 
-             t**3 * end_x)
-        
-        y = ((1-t)**3 * start_y + 
-             3*(1-t)**2*t * control1_y + 
-             3*(1-t)*t**2 * control2_y + 
-             t**3 * end_y)
-        
+
+    def _create_branch_path(
+        self, start_x: int, start_y: int, end_x: int, end_y: int, index: int
+    ) -> str:
+        c1x = start_x + (end_x - start_x) * 0.3 + random.randint(-15, 15)
+        c1y = start_y + (end_y - start_y) * 0.3
+        c2x = start_x + (end_x - start_x) * 0.7 + random.randint(-15, 15)
+        c2y = start_y + (end_y - start_y) * 0.7
+        return f"M {start_x},{start_y} C {c1x},{c1y} {c2x},{c2y} {end_x},{end_y}"
+
+    def _get_point_on_curve(
+        self, sx: int, sy: int, ex: int, ey: int, t: float, idx: int
+    ) -> Tuple[float, float]:
+        c1x = sx + (ex - sx) * 0.3 + (idx - 1.5) * 10
+        c1y = sy + (ey - sy) * 0.3
+        c2x = sx + (ex - sx) * 0.7 + (idx - 1.5) * 10
+        c2y = sy + (ey - sy) * 0.7
+
+        x = (1-t)**3*sx + 3*(1-t)**2*t*c1x + 3*(1-t)*t**2*c2x + t**3*ex
+        y = (1-t)**3*sy + 3*(1-t)**2*t*c1y + 3*(1-t)*t**2*c2y + t**3*ey
         return x, y
-    
-    def _create_star_points(self, cx: float, cy: float, outer_r: float, inner_r: float) -> str:
-        """Create points for a 5-pointed star"""
-        points = []
-        for i in range(10):
-            angle = (i * math.pi / 5) - (math.pi / 2)
-            r = outer_r if i % 2 == 0 else inner_r
-            x = cx + r * math.cos(angle)
-            y = cy + r * math.sin(angle)
-            points.append(f"{x},{y}")
-        return " ".join(points)
-    
+
     def _add_legend(self, dwg):
-        """Add a legend to the visualization"""
-        legend_x = 20
-        legend_y = self.height - 80
-        
-        # Game-style legend box
-        legend_group = dwg.g()
-        
-        # Legend background with gradient
-        legend_grad = dwg.defs.add(dwg.linearGradient(id="legend-grad", x1="0%", y1="0%", x2="100%", y2="100%"))
-        legend_grad.add_stop_color(offset="0%", color="#FFE5B4")
-        legend_grad.add_stop_color(offset="100%", color="#FFDAB9")
-        
-        legend_bg = dwg.rect(insert=(legend_x - 15, legend_y - 30), 
-                           size=(220, 85), 
-                           fill="url(#legend-grad)", 
-                           stroke="#FFD700", 
-                           stroke_width=3,
-                           rx=15, ry=15, 
-                           opacity=0.95)
-        legend_group.add(legend_bg)
-        
-        # Legend title with game font
-        legend_title = dwg.text("🗺️ Quest Guide:", 
-                              insert=(legend_x, legend_y), 
-                              style="font-family: 'Fredoka', cursive; font-size: 16px; font-weight: 700; fill: #667eea;")
-        legend_group.add(legend_title)
-        
-        # Legend items with icons
+        lx, ly = 16, self.height - 65
+
+        g = dwg.g()
+        g.add(
+            dwg.rect(
+                insert=(lx - 10, ly - 22),
+                size=(185, 60),
+                fill="rgba(255, 255, 255, 0.04)",
+                stroke="rgba(255, 255, 255, 0.08)",
+                stroke_width=1,
+                rx=10,
+                ry=10,
+            )
+        )
+
         items = [
-            "🎈 Branches = Timeline Adventures",
-            "✨ Hover = Reveal Magic",
-            "💎 Events = Power-Up Points"
+            ("Branches = alternate timelines", "#a78bfa"),
+            ("Hover to reveal events", "#60a5fa"),
+            ("Dots = key milestones", "#34d399"),
         ]
-        
-        for i, item in enumerate(items):
-            legend_text = dwg.text(item, 
-                                 insert=(legend_x, legend_y + 20 + i*18), 
-                                 style="font-family: 'Fredoka', cursive; font-size: 13px; fill: #333; font-weight: 500;")
-            legend_group.add(legend_text)
-        
-        dwg.add(legend_group)
-    
+        for i, (text, color) in enumerate(items):
+            g.add(
+                dwg.text(
+                    text,
+                    insert=(lx, ly + i * 16),
+                    style=f"font-family: 'Inter', sans-serif; font-size: 11px; fill: {color}; font-weight: 400;",
+                )
+            )
+
+        dwg.add(g)
+
     def create_shareable_image(self, svg_content: str) -> str:
-        """Convert SVG to base64 for sharing"""
-        return base64.b64encode(svg_content.encode('utf-8')).decode('utf-8')
+        return base64.b64encode(svg_content.encode("utf-8")).decode("utf-8")
+
 
 class MobileRiverAdapter:
-    """Adapter for mobile-responsive visualizations"""
-    
     @staticmethod
     def adapt_for_mobile(svg_content: str, screen_width: int) -> str:
-        """Adapt SVG for mobile screens"""
         if screen_width < 768:
-            # Add viewBox for responsive scaling
             svg_content = svg_content.replace(
-                '<svg ', 
-                '<svg viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet" '
+                "<svg ",
+                '<svg viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet" ',
             )
-            # Make text slightly larger for mobile
-            svg_content = svg_content.replace('font-size: 12px', 'font-size: 14px')
-            svg_content = svg_content.replace('font-size: 14px', 'font-size: 16px')
-        
         return svg_content
