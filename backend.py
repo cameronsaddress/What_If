@@ -15,7 +15,7 @@ from sqlalchemy import create_engine, Column, String, JSON, DateTime, Integer
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 import os
 
-from probabilities import get_probability, LIFE_DECISION_PROBABILITIES
+from probabilities import LIFE_DECISION_PROBABILITIES
 from rate_limiter import rate_limiter, response_cache, api_monitor
 from security import input_validator, content_filter
 from config import LLM_CONFIG, COST_ESTIMATES

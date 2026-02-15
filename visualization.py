@@ -5,7 +5,6 @@ Creates interactive SVG with Bezier curves, hover effects, and mobile adaptation
 
 import svgwrite
 import random
-import math
 from typing import List, Tuple, Dict
 import base64
 

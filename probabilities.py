@@ -1,7 +1,8 @@
 """
-Real-world probability data for life decision simulations
-Compiled by Research Agent for realistic mode
+Real-world probability data for life decision simulations.
 """
+
+import random
 
 LIFE_DECISION_PROBABILITIES = {
     "career_relocation": {
@@ -56,6 +57,5 @@ def get_probability(category: str, outcome: str, mode: str = "realistic") -> flo
         return LIFE_DECISION_PROBABILITIES.get(category, {}).get(outcome, 0.5)
     elif mode == "50/50":
         return 0.5
-    else:  # random/crazy mode
-        import random
+    else:
         return random.uniform(0.1, 0.9)
