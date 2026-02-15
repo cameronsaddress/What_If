@@ -1,192 +1,137 @@
-# 🌊 Quantum Life Fork Simulator
+# What If
 
-An innovative web application that simulates alternate life paths based on key decisions, featuring an interactive "River of Destiny" visualization.
+AI-powered life-path simulator that explores alternate outcomes of major decisions. Users describe a life choice, and the system generates branching narrative timelines using multi-provider LLM reasoning, real-world probability data, and an interactive "River of Destiny" visualization.
 
-## 🚀 Features
+## Architecture
 
-- **Multi-Path Simulation**: Explore 3-4 alternate life timelines based on your decisions
-- **Three Simulation Modes**:
-  - 🎯 Realistic: Based on real-world probability data
-  - ⚖️ 50/50: Balanced outcomes
-  - 🎲 Random: Wild and unexpected possibilities
-- **Interactive Visualization**: Beautiful SVG "River of Destiny" showing branching life paths
-- **Mobile Responsive**: Works seamlessly on all devices
-- **Social Sharing**: Share your quantum journeys on social media
-- **Premium Features**: Detailed reports, 4 branches, and ad-free experience
-
-## 🛠️ Tech Stack
-
-- **Framework**: Streamlit (Python 3.12+)
-- **Backend**: FastAPI (for async operations)
-- **LLM Integration**: Grok (xAI) / Anthropic Claude / OpenAI GPT-4
-- **Database**: SQLite with SQLAlchemy
-- **Visualization**: SVGWrite for dynamic graphics
-- **Payments**: Stripe integration
-- **Security**: Input validation, content filtering, rate limiting
-- **Performance**: Response caching, API monitoring
-
-## 📋 Prerequisites
-
-- Python 3.12 or higher
-- API key for Grok (xAI), Anthropic Claude, or OpenAI
-- Stripe account (for premium features - optional)
-
-## 🔧 Installation
-
-1. Clone the repository:
-```bash
-git clone https://github.com/yourusername/quantum-life-simulator.git
-cd quantum-life-simulator
+```
+                    Streamlit UI (app.py)
+              Decision Input | Mode Selection
+              Visualization  | API Monitoring
+                         |
+                    SimulationEngine (backend.py)
+                         |
+          +--------------+--------------+
+          |              |              |
+       Grok (xAI)    Claude       GPT-4
+       (primary)    (fallback)   (fallback)
+          |              |              |
+          +--------------+--------------+
+                         |
+          +--------------+--------------+
+          |              |              |
+    Rate Limiter    Response Cache   Security
+    (token bucket)  (LRU, 15m TTL)  (validation,
+     10 req/bucket)  (100 items)     filtering)
+          |
+     SQLAlchemy ORM
+          |
+      SQLite DB
+   (simulation history)
 ```
 
-2. Create a virtual environment:
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+## Tech Stack
+
+| Layer | Technologies |
+|---|---|
+| **UI Framework** | Streamlit with custom CSS (glassmorphism, gradient animations) |
+| **LLM Providers** | Grok (xAI), Anthropic Claude, OpenAI GPT-4 — automatic fallback chain |
+| **Data Models** | Pydantic (type-safe request/response validation) |
+| **Database** | SQLite via SQLAlchemy ORM |
+| **Visualization** | svgwrite — procedural SVG "River of Destiny" with Bezier curves |
+| **Security** | Input sanitization, content filtering, API key masking, XSS prevention |
+| **Performance** | Token bucket rate limiting, LRU response caching (15-min TTL) |
+| **Payments** | Stripe integration (premium tier) |
+
+## Key Features
+
+### Multi-Provider LLM Integration
+- Three-provider fallback chain: Grok -> Claude -> GPT-4
+- Procedural generation fallback when all APIs are unavailable
+- Response caching reduces API costs by avoiding duplicate calls
+- Manual confirmation mode for cost-controlled testing
+
+### Simulation Engine
+- **Three modes:** Realistic (research-backed probabilities), 50/50 (balanced), Random (improbable)
+- Six decision categories with real-world probability data: career relocation, education, entrepreneurship, relationships, lifestyle, financial
+- Fate scoring algorithm (0-100) based on sentiment analysis of generated events
+- Shareable simulation results via database-backed URLs
+
+### Interactive Visualization
+- SVG "River of Destiny" with branching Bezier curve paths
+- Hover effects, gradient animations, mobile-responsive viewBox scaling
+- Color-coded branches based on fate scores
+
+### Production-Grade Infrastructure
+- Token bucket rate limiter (10 requests, 0.5/sec refill, burst limit 5)
+- LRU cache with TTL (100 items, 15-minute expiration)
+- Input validation and sanitization (length limits, HTML escaping)
+- Content filtering for inappropriate requests
+- API usage monitoring with cost tracking
+- Thread-safe operations with locks
+
+## Project Structure
+
+```
+app.py                 Streamlit UI (custom CSS, session state, layout)
+backend.py             SimulationEngine, LLM clients, Pydantic models, DB ops
+visualization.py       River of Destiny SVG generator with mobile adapter
+rate_limiter.py        Token bucket rate limiter + LRU cache + API monitor
+security.py            Input validation, content filtering, API key management
+config.py              Centralized configuration (rate limits, cache, costs)
+probabilities.py       Real-world probability data for 6 decision categories
+test_app.py            Unit and integration tests
+test_improvements.py   Security and performance test suite
+quickstart.sh          Automated setup script
 ```
 
-3. Install dependencies:
+## Getting Started
+
+### Prerequisites
+- Python 3.12+
+- API key for at least one provider: Grok (xAI), Anthropic, or OpenAI
+
+### Quick Start
+
 ```bash
+# Install dependencies
 pip install -r requirements.txt
-```
 
-4. Set up environment variables:
-```bash
+# Configure environment
 cp .env.example .env
 # Edit .env with your API keys
-```
 
-## 🚀 Running the Application
-
-### Development Mode
-```bash
+# Run the application
 streamlit run app.py
+# Available at http://localhost:8501
 ```
 
-The app will be available at `http://localhost:8501`
+API keys can also be entered directly in the UI without environment variables.
 
-### Testing Mode (with Manual API Confirmation)
-1. Run the app normally
-2. Enter your API key in the UI (not in .env)
-3. Each API call will show a confirmation popup
-4. Monitor rate limits and cache hits in the UI
+## Testing
 
-### Production Mode
 ```bash
-streamlit run app.py --server.port 80 --server.address 0.0.0.0
+# Run full test suite
+pytest test_app.py test_improvements.py -v
+
+# Run with coverage
+pytest --cov=. --cov-report=term-missing
 ```
 
-## 🧪 Testing
-
-Run the test suite:
-```bash
-pytest test_app.py -v
-```
-
-## 📱 Deployment Options
-
-### Streamlit Cloud (Recommended)
-1. Push to GitHub
-2. Connect to [Streamlit Cloud](https://streamlit.io/cloud)
-3. Add secrets in dashboard
-4. Deploy!
-
-### Heroku
-```bash
-# Create Procfile
-echo "web: streamlit run app.py --server.port $PORT" > Procfile
-
-# Deploy
-heroku create quantum-life-app
-heroku config:set ANTHROPIC_API_KEY=your_key
-git push heroku main
-```
+## Deployment
 
 ### Docker
+
 ```dockerfile
 FROM python:3.12-slim
 WORKDIR /app
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 COPY . .
-CMD ["streamlit", "run", "app.py"]
+CMD ["streamlit", "run", "app.py", "--server.port", "8501"]
 ```
 
-## 🔐 Security Considerations
-
-- API keys can be entered via UI (masked display)
-- Input validation and sanitization
-- Content filtering for inappropriate requests
-- Rate limiting (10 requests, 0.5/sec refill)
-- API key format validation
-- User data encrypted in database
-- HTTPS enforced in production
-
-## 📊 Performance Optimization
-
-- LLM responses cached for 15 minutes (LRU, 100 items)
-- Token bucket rate limiting prevents API abuse
-- Manual confirmation for testing reduces accidental calls
-- API usage monitoring and cost tracking
-- Database queries optimized with indexes
-- SVG generation optimized for mobile
-- Async operations for better concurrency
-- Fallback to procedural generation on failures
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Open a Pull Request
-
-## 📄 License
-
-MIT License - see LICENSE file
-
-## 🆘 Support
-
-- Documentation: docs.quantumlife.app
-- Issues: [GitHub Issues](https://github.com/yourusername/quantum-life-simulator/issues)
-- Email: support@quantumlife.app
-
-## 🎮 Usage Tips
-
-1. **Best Decisions to Simulate**:
-   - Career moves
-   - Educational choices
-   - Relationship decisions
-   - Life-changing adventures
-
-2. **Understanding Fate Scores**:
-   - 0-40: Challenging path
-   - 41-70: Balanced outcomes
-   - 71-100: Favorable timeline
-
-3. **Sharing Your Journey**:
-   - Click share buttons for social media
-   - Use #QuantumLifeChallenge for TikTok
-   - Screenshot the River visualization
-
-## 🚧 Roadmap
-
-- [ ] PDF export functionality
-- [ ] Multi-language support
-- [ ] Real-time collaborative simulations
-- [ ] AI-generated branch images
-- [ ] Mobile app versions
-
----
-
-## 🆕 Recent Improvements
-
-1. **Grok API Integration**: Full support for xAI's Grok model
-2. **Frontend API Key Input**: No need for environment variables during testing
-3. **Manual Confirmation**: Yes/No popup before each API call
-4. **Enhanced Security**: Input validation, content filtering, key masking
-5. **Advanced Rate Limiting**: Token bucket algorithm with visual status
-6. **Smart Caching**: Reduce costs with intelligent response caching
-7. **API Monitoring**: Track usage, costs, and performance metrics
-
-Built with ❤️ by the Quantum Life Team
+### Streamlit Cloud
+1. Connect GitHub repo to [Streamlit Cloud](https://streamlit.io/cloud)
+2. Add API keys in the Streamlit secrets dashboard
+3. Deploy
